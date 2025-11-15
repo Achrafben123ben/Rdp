@@ -14,12 +14,24 @@
             text-align: center;
             color: white;
             font-family: Arial, sans-serif;
-            font-size: 18px;
+            font-size: 16px;
+            z-index: 100;
+        }
+        #score {
+            position: absolute;
+            top: 30px;
+            width: 100%;
+            text-align: center;
+            color: #ffd700;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            z-index: 100;
         }
     </style>
 </head>
 <body>
-    <div id="info">تحكم في المكعب باستخدام مفاتيح الأسهم</div>
+    <div id="info">اجمع الحلقات الذهبية باستخدام مفاتيح الأسهم</div>
+    <div id="score">النقاط: 0</div>
 
     <!-- Import Map for Three.js -->
     <script type="importmap">
@@ -102,10 +114,17 @@
         const playerMaterial = new THREE.MeshStandardMaterial({ color: 0x0099ff, roughness: 0.5 });
         const player = createGameObject(playerGeometry, playerMaterial);
 
+        // إنشاء "العملة" القابلة للجمع
+        const coinGeometry = new THREE.TorusGeometry(0.5, 0.2, 16, 100);
+        const coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 });
+        const coin = createGameObject(coinGeometry, coinMaterial, new THREE.Vector3(2, 1, 0));
+
         // ====================================================================
         // ٥. منطق اللعبة (Game Logic)
         // ====================================================================
 
+        let score = 0;
+        const scoreElement = document.getElementById('score');
         const playerSpeed = 0.05;
 
         // دالة التحديث: يتم استدعاؤها في كل إطار لتحديث حالة اللعبة
@@ -127,6 +146,26 @@
             // تحديثات أخرى لكائنات اللعبة يمكن إضافتها هنا
             player.rotation.x += 0.005;
             player.rotation.y += 0.005;
+
+            // تحديث دوران العملة لجعلها تبدو ديناميكية
+            coin.rotation.y += 0.01;
+            coin.rotation.z += 0.01;
+
+            // اكتشاف التصادم
+            if (player.position.distanceTo(coin.position) < 1) {
+                // عند التصادم، انقل العملة إلى مكان عشوائي جديد
+                repositionCoin();
+                // زيادة النقاط وتحديث الواجهة
+                score++;
+                scoreElement.innerText = `النقاط: ${score}`;
+            }
+        }
+
+        function repositionCoin() {
+            const rangeX = 8;
+            const rangeY = 4;
+            coin.position.x = (Math.random() - 0.5) * rangeX;
+            coin.position.y = (Math.random() - 0.5) * rangeY;
         }
 
         // ====================================================================
